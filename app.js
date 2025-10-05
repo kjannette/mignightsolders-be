@@ -50,121 +50,9 @@ const altStorage = multer.diskStorage({
 const upload = multer({ storage: storage });
 const uploadComp = multer({ storage: altStorage });
 
-//POST NEW COMPLAINT DOC -> py docConvert pdf-png
-app.post(
-  "/v1/parse-new-compdoc",
-  uploadComp.single("file"),
-  function (req, res) {
-    const id = req.file.originalname.split(".")[0];
-    const isComplaint = true;
-    const clientPosition = "plaintiff";
-    try {
-      req.url = req.url.replace(
-        "/v1/parse-new-compdoc",
-        `/parse-new-complaint/${id}`
-      );
-      proxy.web(req, res, {
-        function(err) {
-          console.log("Proxy error:", err);
-        },
-      });
-    } catch (err) {
-      console.log("Error at /v1/gen-disc-request", err);
-      res.send(err);
-    }
-    res.sendStatus(200);
-  }
-);
-
-/*
- *  POST new discv request => docConvert - for pdf to png
- */
-
-app.post("/v1/parse-new-req-doc", upload.single("file"), function (req, res) {
-  const id = req.file.originalname.split(".")[0];
-
-  try {
-    req.url = req.url.replace(
-      "/v1/parse-new-req-doc",
-      `/parse-new-disc-req/${id}`
-    );
-    proxy.web(req, res, {
-      function(err) {
-        console.log("Proxy error:", err);
-      },
-    });
-  } catch (err) {
-    logger.error({ level: "error", message: "err", err });
-    console.log("Error at /v1/gen-disc-request", err);
-    res.send(err);
-  }
-
-  res.sendStatus(200);
-});
-
-//Make outgoing requests from complaint
-app.post(
-  "/v1/generate-outgoing-disc-req/:docId/:clientPosition",
-  async (req, res) => {
-    const { docId, clientPosition } = req.params;
-
-    const isComplaint = true;
-    try {
-      const res = await tesseController.executeReadWriteActions(
-        docId,
-        isComplaint,
-        clientPosition
-      );
-      //return res;
-    } catch (err) {
-      console.log("err in make-outgoing-requests", err);
-    }
-    res.sendStatus(200);
-  }
-);
-
-//make resp to incoming requests from req doc
-app.post(
-  "/v1/generate-disc-responses/:docId/:clientPosition",
-  async (req, res) => {
-    const { docId, clientPosition } = req.params;
-    console.log(
-      "hit endpoint /v1/generate-disc-responses and this is docId:",
-      docId
-    );
-    const isComplaint = false;
-    try {
-      const res = await tesseController.executeReadWriteActions(
-        docId,
-        isComplaint,
-        clientPosition
-      );
-      return res;
-    } catch (err) {
-      console.log("err in make-outgoing-requests", err);
-    }
-    res.sendStatus(200);
-  }
-);
-
 /*
  *  POST to Generate Docx
  */
-
-app.post("/v1/generate-request-docx/:docId", async function (req, res) {
-  const { docId } = req.params;
-  const data = req.body;
-  try {
-    req.url = req.url.replace("/v1/generate-request-docx", `/gen-req-docx`);
-    proxyTwo.web(req, res, {
-      function(err) {
-        console.log("Proxy error:", err);
-      },
-    });
-  } catch (err) {
-    console.log("generate-request-docx error", err);
-  }
-});
 
 const rootDir =
   process.env.NODE_ENV === "development"
@@ -311,79 +199,13 @@ app.post(
 );
 
 /*
- *  Generate responses to irregular types
- *  combined-numbered
- */
-
-app.get(
-  "/v1/generate-disc-responses-irreg/:docId/:docType/:isRequests",
-  async (req, res) => {
-    const { docId, docType } = req.params;
-    const isRequests = false;
-
-    try {
-      const data = await modelController.arrayGenAnswers(
-        docId,
-        docType,
-        isRequests
-      );
-      res.send(data);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-);
-
-/*
- *
- *  GET .docx discovery response
- *
- */
-
-app.get("/v1/get-docx/:docId/:reqType", (req, res) => {
-  const { docId } = req.params;
-  res.sendFile(`${docId}.docx`, {
-    root: `${rootDir}/ax3Services/Docxfinal/`,
-  });
-});
-
-/*
- *  Cleanup docx working files (temp workaround)
- */
-
-app.get("/cleanUpDocx/:docId/:reqType", (req, res) => {
-  const { docId, reqType } = req.params;
-  try {
-    cleanupGenFolderAndContents(docId, reqType);
-    res.end("doc cleanup complete");
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-/*
- *  POST store user-edited completions
- */
-
-app.post("/v1/store-edited-completions", function (req, res) {
-  const data = req.body;
-
-  try {
-    storeEditedCompletions(data);
-  } catch (err) {
-    console.log("Error at /v1/store-edited-completions:", err);
-  }
-  res.end();
-});
-
-/*
- *  POST store reel data
+ *  POST store new reel data
  */
 
 app.post("/v1/store-reel-data/:reelId", function (req, res) {
-  const { docId } = req.params;
+  const { reelId } = req.params;
   const data = req.body;
-  console.log("data", data);
+  //console.log("data", data);
   try {
     //storeReelData(docId, data);
   } catch (err) {
@@ -391,26 +213,6 @@ app.post("/v1/store-reel-data/:reelId", function (req, res) {
   }
   res.end();
 });
-
-/*
- *
- *  Client GET parsed requests array
- */
-
-app.get("/v1/get-parsed-requests/:docId/:docType", (req, res) => {
-  const { docId, docType } = req.params;
-  try {
-    res.sendFile(`${docId}-jbk-parsedRequests.json`, {
-      root: `${rootDir}/ax3Services/Documents/Requests/${docType}/${docId}/`,
-    });
-  } catch (err) {
-    console.log("err", err);
-  }
-});
-
-/*
- *  Client GET completions - requests outgoing
- */
 
 console.log("app running on port", port);
 console.log("rootDir", rootDir);
