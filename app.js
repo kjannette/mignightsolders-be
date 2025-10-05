@@ -3,27 +3,9 @@ const app = express();
 const fs = require("fs");
 const cors = require("cors");
 const multer = require("multer");
-const logger = require("./logger/logger.js");
-const modelController = require("./agent/ModelController.js");
-const tesseController = require("./tesseReaderService/tesseController.js");
-const stripeController = require("./paymentService/stripeController.js");
-const { db } = require("./firebase/firebase.js");
-const trialUsers = require("./Constants/trialSignupData.js");
-const crypto = require("crypto");
+//const { db } = require("./firebase/firebase.js");
+//const crypto = require("crypto");
 
-const {
-  storeEditedCompletions,
-  storeDataForGenServices,
-} = require("./storageService/storeEditedCompletion.js");
-const {
-  deleteDocument,
-  deleteFolderAndContents,
-  cleanupGenFolderAndContents,
-} = require("./storageService/deleteDirOrDoc.js");
-const {
-  handlePaymentFailure,
-  handleSubscriptionDeletion,
-} = require("./paymentService/stripe.js");
 const { collection, query, where, getDocs } = require("firebase/firestore");
 
 const generatePassword = (
@@ -35,27 +17,20 @@ const generatePassword = (
     .join("");
 
 //*** STRIPE ***/
+
+/*
 const Stripe = require("stripe");
 const { stripeAPIKey, stripeWebhooksKey } = require("./firebase/secrets.js");
 const stripe = Stripe(stripeAPIKey);
 // Secret for Stripe webhooks
 const endpointSecret = stripeWebhooksKey;
-
-//** NODE HTTP-PROXY ***/
 const httpProxy = require("http-proxy");
 const targetUrl = "http://127.0.0.1:8081";
 const proxy = httpProxy.createProxy({
   changeOrigin: true,
   target: targetUrl,
 });
-
-//** NODE HTTP-PROXY ***/
-const httpProxy2 = require("http-proxy");
-const targetAdd = "http://127.0.0.1:8087";
-const proxyTwo = httpProxy.createProxy({
-  changeOrigin: true,
-  target: targetAdd,
-});
+*/
 
 //*** MULTER ***/
 const storage = multer.diskStorage({
@@ -94,7 +69,6 @@ app.post(
         },
       });
     } catch (err) {
-      logger.error({ level: "error", message: "err", err });
       console.log("Error at /v1/gen-disc-request", err);
       res.send(err);
     }
@@ -199,7 +173,7 @@ const rootDir =
 
 //*** EXPRESS ***/
 
-const port = 3001;
+const port = 3200;
 
 var corsOptions = {
   AccessControlAllowOrigin: "*",
@@ -278,9 +252,9 @@ app.post("/new-payment-intent", async (req, res) => {
 app.post("/cancel-subscription", async (req, res) => {
   const { appUserId } = req.body;
   try {
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("appUserId", "==", appUserId));
-    const querySnapshot = await getDocs(q);
+    //const usersRef = collection(db, "users");
+    //const q = query(usersRef, where("appUserId", "==", appUserId));
+    //const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
       console.log("No user found with the email:", appUserId);
