@@ -377,15 +377,15 @@ app.post("/v1/store-edited-completions", function (req, res) {
 });
 
 /*
- *  POST store docx data for gen service
+ *  POST store reel data
  */
 
-app.post("/v1/store-docx-data/:docId", function (req, res) {
+app.post("/v1/store-reel-data/:reelId", function (req, res) {
   const { docId } = req.params;
   const data = req.body;
   console.log("data", data);
   try {
-    storeDataForGenServices(docId, data);
+    //storeReelData(docId, data);
   } catch (err) {
     console.log("Error at /v1/store-edited-completions:", err);
   }
@@ -409,70 +409,8 @@ app.get("/v1/get-parsed-requests/:docId/:docType", (req, res) => {
 });
 
 /*
- *
- *  Client GET focus user data
- */
-
-app.get("/v1/get-focused-data/:code", (req, res) => {
-  const { code } = req.params;
-
-  try {
-    const match = trialUsers.trialUsers.filter(
-      (user) => user.signupCode === code
-    );
-
-    if (match.length > 0) {
-      const mspall = generatePassword();
-      match[0]["mspall"] = mspall;
-      res.send(match);
-    }
-  } catch (err) {
-    console.log("err", err);
-  }
-});
-
-/*
- *  Client GET completions - (responses to) incoming requests
- */
-
-app.get("/v1/get-completions/:docId/:docType", (req, res) => {
-  const { docId, docType } = req.params;
-  try {
-    res.sendFile(`${docId}-jbk-responses.json`, {
-      root: `./Documents/Responses/${docType}/${docId}/`,
-    });
-  } catch (err) {
-    console.log("err", err);
-  }
-});
-
-/*
  *  Client GET completions - requests outgoing
  */
-
-app.get("/v1/get-outgoing-requests/:docId/:docType", (req, res) => {
-  const { docId, docType } = req.params;
-  try {
-    res.sendFile(`${docId}-jbk-requests-out.json`, {
-      root: `./Documents/RequestsOut/${docId}/`,
-    });
-  } catch (err) {
-    console.log("err", err);
-  }
-});
-
-/*
- *  Client POST to delete a request or response document
- */
-
-app.post("/deleteDoc/:docId/:docType/:respGens", (req, res) => {
-  const { docId, docType, respGens } = req.params;
-  try {
-    deleteFolderAndContents(docId, docType, respGens);
-  } catch (err) {
-    console.log("err", err);
-  }
-});
 
 console.log("app running on port", port);
 console.log("rootDir", rootDir);
