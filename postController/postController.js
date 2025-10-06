@@ -1,4 +1,6 @@
-const { postReelToFacebook } = require("../postServices/facebookReelPost.js");
+const {
+  postReelToFacebook,
+} = require("../postServices/facebookPostService.js");
 
 class PostController {
   constructor() {
