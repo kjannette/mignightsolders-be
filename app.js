@@ -56,7 +56,7 @@ const uploadComp = multer({ storage: altStorage });
 
 const rootDir =
   process.env.NODE_ENV === "development"
-    ? "/Users/kjannette/workspace/ax3"
+    ? "/Users/kjannette/workspace8/testStoraage"
     : "/var/www";
 
 //*** EXPRESS ***/
@@ -205,9 +205,9 @@ app.post(
 app.post("/v1/store-reel-data/:reelId", function (req, res) {
   const { reelId } = req.params;
   const data = req.body;
-  //console.log("data", data);
   try {
     //storeReelData(docId, data);
+    console.log("data received by backed:  ", data);
   } catch (err) {
     console.log("Error at /v1/store-edited-completions:", err);
   }
