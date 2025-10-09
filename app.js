@@ -3,6 +3,12 @@ const app = express();
 const fs = require("fs");
 const cors = require("cors");
 const multer = require("multer");
+
+// Import API services
+const { postReelToFacebook } = require("./postServices/facebookApiService.js");
+const {
+  postReelToInstagram,
+} = require("./postServices/instagramApiService.js");
 //const { db } = require("./firebase/firebase.js");
 //const crypto = require("crypto");
 
@@ -73,6 +79,9 @@ var corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+
+// Serve video files statically for API testing
+app.use("/video_files", express.static("video_files"));
 
 /*
  *  Client POST create stripe subscription, make payment
@@ -212,6 +221,165 @@ app.post("/v1/store-reel-data/:reelId", function (req, res) {
     console.log("Error at /v1/store-edited-completions:", err);
   }
   res.end();
+});
+
+/*
+ *  POST test Facebook reel upload
+ */
+app.post("/test/facebook-reel", async function (req, res) {
+  console.log("Testing Facebook reel upload...");
+  const { videoFileName, reelName, reelDescription } = req.body;
+
+  try {
+    // Construct the public URL for the video file
+    const baseUrl = `https://www.midnightsoldiers.com:${port}`;
+    const videoUrl = `${baseUrl}/video_files/${videoFileName}`;
+
+    // Get file size
+    const filePath = `./video_files/${videoFileName}`;
+    const stats = fs.statSync(filePath);
+    const fileSizeInMB = stats.size / (1024 * 1024);
+
+    const reelData = {
+      reelVideoUrl: videoUrl,
+      reelSize: fileSizeInMB,
+      reelName: reelName || "Test Reel",
+      reelDescription:
+        reelDescription || "Test upload - will delete soon! #test",
+    };
+
+    console.log("Uploading to Facebook with data:", reelData);
+    const result = await postReelToFacebook(reelData);
+
+    res.json({
+      success: true,
+      platform: "Facebook",
+      result: result,
+    });
+  } catch (error) {
+    console.error("Facebook upload test failed:", error);
+    res.status(500).json({
+      success: false,
+      platform: "Facebook",
+      error: error.message,
+    });
+  }
+});
+
+/*
+ *  POST test Instagram reel upload
+ */
+app.post("/test/instagram-reel", async function (req, res) {
+  console.log("Testing Instagram reel upload...");
+  const { videoFileName, reelName, reelDescription } = req.body;
+
+  try {
+    // Construct the public URL for the video file
+    const baseUrl = `https://www.midnightsoldiers.com:${port}`;
+    const videoUrl = `${baseUrl}/video_files/${videoFileName}`;
+
+    // Get file size
+    const filePath = `./video_files/${videoFileName}`;
+    const stats = fs.statSync(filePath);
+    const fileSizeInMB = stats.size / (1024 * 1024);
+
+    const reelData = {
+      reelVideoUrl: videoUrl,
+      reelSize: fileSizeInMB,
+      reelName: reelName || "Test Reel",
+      reelDescription:
+        reelDescription || "Test upload - will delete soon! #test",
+    };
+
+    console.log("Uploading to Instagram with data:", reelData);
+    const result = await postReelToInstagram(reelData);
+
+    res.json({
+      success: true,
+      platform: "Instagram",
+      result: result,
+    });
+  } catch (error) {
+    console.error("Instagram upload test failed:", error);
+    res.status(500).json({
+      success: false,
+      platform: "Instagram",
+      error: error.message,
+    });
+  }
+});
+
+/*
+ *  PUT route to post reel to both Facebook and Instagram
+ */
+app.put("/api/post-to-social/:reelId", async function (req, res) {
+  console.log("POST TO SOCIAL MEDIA ENDPOINT CALLED");
+  const { reelId } = req.params;
+  const { reelName, reelDescription, reelVideoUrl, reelSize } = req.body;
+
+  console.log("Reel ID:", reelId);
+  console.log("Reel data received:", req.body);
+
+  try {
+    const reelData = {
+      reelVideoUrl,
+      reelSize,
+      reelName: reelName || "Untitled Reel",
+      reelDescription: reelDescription || "Posted from Midnight Soldiers",
+    };
+
+    console.log("Prepared reel data for APIs:", reelData);
+
+    // Post to Facebook and Instagram in parallel
+    const [facebookResult, instagramResult] = await Promise.allSettled([
+      postReelToFacebook(reelData),
+      postReelToInstagram(reelData),
+    ]);
+
+    // Process results
+    const results = {
+      reelId,
+      facebook: {
+        success: facebookResult.status === "fulfilled",
+        data:
+          facebookResult.status === "fulfilled" ? facebookResult.value : null,
+        error:
+          facebookResult.status === "rejected"
+            ? facebookResult.reason.message
+            : null,
+      },
+      instagram: {
+        success: instagramResult.status === "fulfilled",
+        data:
+          instagramResult.status === "fulfilled" ? instagramResult.value : null,
+        error:
+          instagramResult.status === "rejected"
+            ? instagramResult.reason.message
+            : null,
+      },
+    };
+
+    console.log("Social media posting results:", results);
+
+    // Return success if at least one platform succeeded
+    const overallSuccess =
+      results.facebook.success || results.instagram.success;
+
+    res.json({
+      success: overallSuccess,
+      message: overallSuccess
+        ? "Reel posted to social media"
+        : "Failed to post to any platform",
+      results: results,
+    });
+  } catch (error) {
+    console.error("Error in post-to-social endpoint:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      reelId,
+    });
+  }
 });
 
 console.log("app running on port", port);

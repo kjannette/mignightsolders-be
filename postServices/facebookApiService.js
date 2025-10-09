@@ -1,9 +1,6 @@
 // Facebook Reels API Service
 // Based on: https://developers.facebook.com/docs/video-api/guides/reels-publishing/
-
-// PLACEHOLDERS - TO BE REPLACED WITH ACTUAL VALUES
-const FACEBOOK_PAGE_ID = "YOUR_PAGE_ID_PLACEHOLDER"; // Replace with actual Facebook Page ID
-const FACEBOOK_PAGE_ACCESS_TOKEN = "YOUR_PAGE_ACCESS_TOKEN_PLACEHOLDER"; // Replace with actual Page access token
+import { FACEBOOK_PAGE_ID, FACEBOOK_PAGE_ACCESS_TOKEN } from "../secrets.js";
 const FACEBOOK_API_VERSION = "v23.0";
 const FACEBOOK_GRAPH_API_BASE = "https://graph.facebook.com";
 
