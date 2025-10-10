@@ -1,10 +1,10 @@
 // Instagram Reels API Service
 // Based on: https://developers.facebook.com/docs/instagram-api/guides/content-publishing
 
-import {
+const {
   INSTAGRAM_BUSINESS_ACCOUNT_ID,
   INSTAGRAM_ACCESS_TOKEN,
-} from "../secrets.js";
+} = require("../secrets.js");
 const INSTAGRAM_API_VERSION = "v23.0";
 const FACEBOOK_GRAPH_API_BASE = "https://graph.facebook.com";
 

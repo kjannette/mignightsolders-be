@@ -1,6 +1,6 @@
 // Facebook Reels API Service
 // Based on: https://developers.facebook.com/docs/video-api/guides/reels-publishing/
-import { FACEBOOK_PAGE_ID, FACEBOOK_PAGE_ACCESS_TOKEN } from "../secrets.js";
+const { FACEBOOK_PAGE_ID, FACEBOOK_PAGE_ACCESS_TOKEN } = require("../secrets.js");
 const FACEBOOK_API_VERSION = "v23.0";
 const FACEBOOK_GRAPH_API_BASE = "https://graph.facebook.com";
 
