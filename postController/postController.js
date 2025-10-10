@@ -10,24 +10,8 @@ const {
 
 class PostController {
   constructor() {
-    // Test with mock data on initialization
-    this.testWithMockData();
-  }
-
-  /**
-   * Test the Facebook API workflow with mock data
-   */
-  async testWithMockData() {
-    const reelDataMock = {
-      mock: true,
-      reelName: "Test Reel",
-      reelDescription: "Test description with #hashtags",
-      reelVideoUrl: "https://firebase-storage-url-placeholder.com/video.mp4",
-      reelSize: 35.67, // Size in MB
-    };
-
-    console.log("Testing Facebook API workflow with mock data...");
-    await this.handleReelPost(reelDataMock);
+    // Production mode - no testing on initialization
+    console.log("PostController initialized in production mode");
   }
 
   /**
