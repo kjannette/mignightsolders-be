@@ -321,6 +321,61 @@ app.put("/api/post-to-social/:reelId", async function (req, res) {
   console.log("Reel data received:", req.body);
 
   try {
+    // Validate required fields
+    if (!reelVideoUrl) {
+      return res.status(400).json({
+        success: false,
+        error: "reelVideoUrl is required",
+        reelId,
+      });
+    }
+
+    // Validate URL format (must be HTTPS for social media APIs)
+    try {
+      const url = new URL(reelVideoUrl);
+      if (url.protocol !== "https:" && url.protocol !== "http:") {
+        return res.status(400).json({
+          success: false,
+          error: "reelVideoUrl must be a valid HTTP/HTTPS URL",
+          reelId,
+        });
+      }
+    } catch (urlError) {
+      return res.status(400).json({
+        success: false,
+        error: "reelVideoUrl is not a valid URL",
+        reelId,
+      });
+    }
+
+    // Validate file size
+    if (!reelSize || typeof reelSize !== "number" || reelSize <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: "reelSize must be a positive number (in MB)",
+        reelId,
+      });
+    }
+
+    // Check file size limits
+    // Facebook: 4GB max (4096 MB)
+    // Instagram: 100MB recommended, 1GB max (1024 MB)
+    const maxSizeMB = 1024; // Use Instagram's limit as it's more restrictive
+    if (reelSize > maxSizeMB) {
+      return res.status(400).json({
+        success: false,
+        error: `File size (${reelSize}MB) exceeds maximum allowed size (${maxSizeMB}MB for Instagram)`,
+        reelId,
+      });
+    }
+
+    // Warn if size is large (over 100MB)
+    if (reelSize > 100) {
+      console.warn(
+        `Warning: File size (${reelSize}MB) exceeds Instagram's recommended size (100MB)`
+      );
+    }
+
     const reelData = {
       reelVideoUrl,
       reelSize,
