@@ -33,20 +33,20 @@ async function generateLongLivedUserToken() {
     
     if (!response.ok) {
       const error = await response.text();
-      console.error("❌ Error getting long-lived user token:");
+      console.error("Error getting long-lived user token:");
       console.error(error);
       return null;
     }
 
     const data = await response.json();
-    console.log("✅ Long-Lived User Token generated successfully!");
+    console.log("Long-Lived User Token generated successfully!");
     console.log("Token:", data.access_token);
     console.log("Expires in:", data.expires_in, "seconds (~", Math.round(data.expires_in / 86400), "days)");
     console.log();
     
     return data.access_token;
   } catch (error) {
-    console.error("❌ Error:", error.message);
+    console.error("Error:", error.message);
     return null;
   }
 }
@@ -63,7 +63,7 @@ async function getPageAccessToken(userToken) {
     
     if (!response.ok) {
       const error = await response.text();
-      console.error("❌ Error getting page tokens:");
+      console.error("Error getting page tokens:");
       console.error(error);
       return;
     }
@@ -71,11 +71,11 @@ async function getPageAccessToken(userToken) {
     const data = await response.json();
     
     if (!data.data || data.data.length === 0) {
-      console.log("⚠️  No pages found for this user");
+      console.log("No pages found for this user");
       return;
     }
 
-    console.log("✅ Found", data.data.length, "page(s):\n");
+    console.log("Found", data.data.length, "page(s):\n");
     
     data.data.forEach((page, index) => {
       console.log(`\n--- Page ${index + 1}: ${page.name} ---`);
@@ -86,7 +86,7 @@ async function getPageAccessToken(userToken) {
     });
 
     console.log("\n========================================");
-    console.log("✅ NEXT STEPS:");
+    console.log("NEXT STEPS:");
     console.log("========================================");
     console.log("1. Copy the Page Access Token for your page");
     console.log("2. Update secrets.js with:");
@@ -96,19 +96,19 @@ async function getPageAccessToken(userToken) {
     console.log("========================================\n");
 
   } catch (error) {
-    console.error("❌ Error:", error.message);
+    console.error("Error:", error.message);
   }
 }
 
 async function main() {
-  console.log("\n🚀 Facebook Long-Lived Token Generator\n");
+  console.log("\nFacebook Long-Lived Token Generator\n");
 
   // Validation
   if (APP_ID === "YOUR_APP_ID_HERE" || 
       APP_SECRET === "YOUR_APP_SECRET_HERE" || 
       SHORT_LIVED_TOKEN === "YOUR_SHORT_LIVED_USER_TOKEN_HERE") {
-    console.error("❌ ERROR: Please fill in APP_ID, APP_SECRET, and SHORT_LIVED_TOKEN at the top of this file\n");
-    console.log("📝 How to get these values:");
+    console.error("ERROR: Please fill in APP_ID, APP_SECRET, and SHORT_LIVED_TOKEN at the top of this file\n");
+    console.log("How to get these values:");
     console.log("1. Go to https://developers.facebook.com/apps/");
     console.log("2. Select your app (or create one)");
     console.log("3. Get APP_ID from the app dashboard");
@@ -130,7 +130,7 @@ async function main() {
   const longLivedUserToken = await generateLongLivedUserToken();
   
   if (!longLivedUserToken) {
-    console.error("\n❌ Failed to generate long-lived user token. Please check your credentials.\n");
+    console.error("\nFailed to generate long-lived user token. Please check your credentials.\n");
     return;
   }
 

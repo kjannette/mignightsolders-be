@@ -1,4 +1,4 @@
-# 🚀 Create New Instagram Account for Midnight Soldiers
+# Create New Instagram Account for Midnight Soldiers
 
 ## Overview
 
@@ -185,10 +185,10 @@ This guide will walk you through:
    
    You should see:
    ```
-   ✅ SUCCESS! Your token has the critical Instagram permissions.
-   ✅ Instagram Business Account found!
+   SUCCESS! Your token has the critical Instagram permissions.
+   Instagram Business Account found!
    ID: [your new ID]
-   ✅ Matches secrets.js configuration
+   Matches secrets.js configuration
    ```
 
 2. **Restart your backend server**
@@ -278,11 +278,11 @@ const INSTAGRAM_ACCESS_TOKEN = "[YOUR_NEW_60_DAY_TOKEN]"; // Same as page token
 
 ## Benefits of New Account
 
-✅ **Clean slate:** No legacy connection issues  
-✅ **Full control:** You own the account from day 1  
-✅ **Brand consistency:** Username matches your Facebook page  
-✅ **Properly configured:** Business account set up correctly from the start  
-✅ **API ready:** Connected and configured for API posting  
+**Clean slate:** No legacy connection issues  
+**Full control:** You own the account from day 1  
+**Brand consistency:** Username matches your Facebook page  
+**Properly configured:** Business account set up correctly from the start  
+**API ready:** Connected and configured for API posting  
 
 ---
 

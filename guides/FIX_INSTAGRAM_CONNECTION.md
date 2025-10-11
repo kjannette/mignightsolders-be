@@ -1,12 +1,12 @@
-# 🔧 Fix Instagram Business Account Connection
+# Fix Instagram Business Account Connection
 
-## The Problem ✅ IDENTIFIED
+## The Problem - IDENTIFIED
 
 Your access token has all the required permissions:
-- ✅ `instagram_content_publish`
-- ✅ `instagram_manage_insights`
-- ✅ `pages_manage_posts`
-- ✅ All other required permissions
+- `instagram_content_publish`
+- `instagram_manage_insights`
+- `pages_manage_posts`
+- All other required permissions
 
 **BUT:** Your Instagram Business Account is NOT connected to your Facebook Page!
 
@@ -57,9 +57,9 @@ node checkTokenPermissions.js
 
 You should see:
 ```
-✅ Instagram Business Account found!
+Instagram Business Account found!
 ID: 17841407775331305
-✅ Matches secrets.js configuration
+Matches secrets.js configuration
 ```
 
 ### Step 4: Test Posting a Reel
@@ -90,8 +90,8 @@ Once connected, try posting a reel again. It should work now!
 ## Why This Happened
 
 The Facebook/Instagram API requires:
-1. ✅ Correct permissions on the access token (YOU HAVE THIS)
-2. ❌ Instagram Business Account connected to Facebook Page (YOU'RE MISSING THIS)
+1. Correct permissions on the access token (YOU HAVE THIS)
+2. Instagram Business Account connected to Facebook Page (YOU'RE MISSING THIS)
 
 Without the connection, the API doesn't know which Instagram account to post to, even though you have the right permissions.
 

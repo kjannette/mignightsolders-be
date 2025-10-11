@@ -16,7 +16,7 @@ const FACEBOOK_API_VERSION = "v23.0";
 const FACEBOOK_PAGE_ID = "862511466941111"; // Your Facebook Page ID
 
 async function getInstagramBusinessAccountId(accessToken) {
-  console.log("\n🔍 Fetching Instagram Business Account ID...\n");
+  console.log("\nFetching Instagram Business Account ID...\n");
   
   try {
     const url = `https://graph.facebook.com/${FACEBOOK_API_VERSION}/${FACEBOOK_PAGE_ID}?fields=instagram_business_account{id,username,name,profile_picture_url}&access_token=${accessToken}`;
@@ -25,21 +25,21 @@ async function getInstagramBusinessAccountId(accessToken) {
     
     if (!response.ok) {
       const error = await response.text();
-      console.error("❌ Error fetching Instagram account:", error);
+      console.error("Error fetching Instagram account:", error);
       return null;
     }
     
     const data = await response.json();
     
     if (!data.instagram_business_account) {
-      console.error("❌ No Instagram Business Account connected to this Facebook Page!");
+      console.error("No Instagram Business Account connected to this Facebook Page!");
       console.error("Please follow the instructions in CREATE_NEW_INSTAGRAM_ACCOUNT.md");
       return null;
     }
     
     const igAccount = data.instagram_business_account;
     
-    console.log("✅ Instagram Business Account Found!\n");
+    console.log("Instagram Business Account Found!\n");
     console.log("════════════════════════════════════════");
     console.log("  Username:", igAccount.username || "N/A");
     console.log("  Name:", igAccount.name || "N/A");
@@ -49,13 +49,13 @@ async function getInstagramBusinessAccountId(accessToken) {
     return igAccount;
     
   } catch (error) {
-    console.error("❌ Error:", error.message);
+    console.error("Error:", error.message);
     return null;
   }
 }
 
 async function checkTokenPermissions(accessToken) {
-  console.log("🔍 Checking token permissions...\n");
+  console.log("Checking token permissions...\n");
   
   try {
     const url = `https://graph.facebook.com/${FACEBOOK_API_VERSION}/debug_token?input_token=${accessToken}&access_token=${accessToken}`;
@@ -64,7 +64,7 @@ async function checkTokenPermissions(accessToken) {
     
     if (!response.ok) {
       const error = await response.text();
-      console.error("❌ Error checking token:", error);
+      console.error("Error checking token:", error);
       return false;
     }
     
@@ -72,7 +72,7 @@ async function checkTokenPermissions(accessToken) {
     const tokenData = data.data;
     
     if (!tokenData.is_valid) {
-      console.error("❌ Token is not valid!");
+      console.error("Token is not valid!");
       return false;
     }
     
@@ -83,20 +83,20 @@ async function checkTokenPermissions(accessToken) {
     console.log("Token Scopes:", scopes.join(', '), "\n");
     
     if (!hasContentPublish) {
-      console.error("❌ Missing required permission: instagram_content_publish");
+      console.error("Missing required permission: instagram_content_publish");
       return false;
     }
     
     if (!hasInsights) {
-      console.error("❌ Missing required permission: instagram_basic or instagram_manage_insights");
+      console.error("Missing required permission: instagram_basic or instagram_manage_insights");
       return false;
     }
     
-    console.log("✅ Token has all required Instagram permissions!\n");
+    console.log("Token has all required Instagram permissions!\n");
     return true;
     
   } catch (error) {
-    console.error("❌ Error:", error.message);
+    console.error("Error:", error.message);
     return false;
   }
 }
@@ -149,13 +149,13 @@ async function promptForToken() {
 async function main() {
   console.log("\n");
   console.log("═══════════════════════════════════════════════════════════");
-  console.log("  📱 Instagram Configuration Updater for Midnight Soldiers");
+  console.log("  Instagram Configuration Updater for Midnight Soldiers");
   console.log("═══════════════════════════════════════════════════════════\n");
   
   console.log("This script will help you update secrets.js with your new");
   console.log("Instagram Business Account information.\n");
   
-  console.log("📋 Prerequisites:");
+  console.log("Prerequisites:");
   console.log("  1. You've created a new Instagram account (@midnightsoldiers)");
   console.log("  2. You've converted it to a Business account");
   console.log("  3. You've connected it to your Facebook Page");
@@ -168,7 +168,7 @@ async function main() {
   const accessToken = await promptForToken();
   
   if (!accessToken || accessToken === '') {
-    console.error("\n❌ No token provided. Exiting.\n");
+    console.error("\nNo token provided. Exiting.\n");
     return;
   }
   
@@ -178,7 +178,7 @@ async function main() {
   const hasPermissions = await checkTokenPermissions(accessToken);
   
   if (!hasPermissions) {
-    console.error("❌ Token does not have required permissions.");
+    console.error("Token does not have required permissions.");
     console.error("Please generate a new token with these permissions:");
     console.error("  - pages_show_list");
     console.error("  - pages_read_engagement");
@@ -192,21 +192,21 @@ async function main() {
   const igAccount = await getInstagramBusinessAccountId(accessToken);
   
   if (!igAccount) {
-    console.error("❌ Could not fetch Instagram Business Account.");
+    console.error("Could not fetch Instagram Business Account.");
     console.error("Make sure your Instagram account is connected to your Facebook Page.\n");
     return;
   }
   
   // Generate new secrets.js content
   console.log("═══════════════════════════════════════════════════════════");
-  console.log("  ✅ SUCCESS! Here's your updated secrets.js content:");
+  console.log("  SUCCESS! Here's your updated secrets.js content:");
   console.log("═══════════════════════════════════════════════════════════\n");
   
   const newContent = generateSecretsJsContent(igAccount, accessToken);
   console.log(newContent);
   
   console.log("═══════════════════════════════════════════════════════════");
-  console.log("  📝 Next Steps:");
+  console.log("  Next Steps:");
   console.log("═══════════════════════════════════════════════════════════\n");
   console.log("1. Copy the content above");
   console.log("2. Replace the content of secrets.js with it");

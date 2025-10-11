@@ -31,11 +31,11 @@ This means your Facebook/Instagram access token doesn't have the required permis
 2. Select your app: **midnightsol**
 3. Click **Generate Access Token**
 4. In the permissions dialog, select these permissions:
-   - ✅ `pages_show_list`
-   - ✅ `pages_read_engagement`
-   - ✅ `pages_manage_posts`
-   - ✅ `instagram_basic` (or `instagram_manage_insights` for newer API versions)
-   - ✅ `instagram_content_publish` ← **THIS IS THE KEY ONE**
+   - `pages_show_list`
+   - `pages_read_engagement`
+   - `pages_manage_posts`
+   - `instagram_basic` (or `instagram_manage_insights` for newer API versions)
+   - `instagram_content_publish` **THIS IS THE KEY ONE**
 5. Complete the login flow and grant permissions
 6. Copy the generated short-lived token
 

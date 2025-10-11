@@ -1,18 +1,18 @@
-# 🚀 Quick Start: New Instagram Account Setup
+# Quick Start: New Instagram Account Setup
 
 ## TL;DR - Do These 3 Things
 
-### 1️⃣ Create Instagram Account (5 minutes)
+### 1. Create Instagram Account (5 minutes)
 - Download Instagram app
 - Create account: **@midnightsoldiers** (or similar)
 - Username matters, use something related to your brand
 
-### 2️⃣ Convert to Business & Connect (5 minutes)
+### 2. Convert to Business & Connect (5 minutes)
 **On Mobile App:**
 - Settings → Account → Switch to Professional Account → Business
 - When prompted, connect to Facebook Page: **midnightsol**
 
-### 3️⃣ Update Backend (5 minutes)
+### 3. Update Backend (5 minutes)
 ```bash
 cd /Users/kjannette/workspace/midnightsoldiers/midnightsoldiers-be
 
@@ -38,9 +38,9 @@ node updateInstagramConfig.js
 node checkTokenPermissions.js
 
 # Should show:
-# ✅ Token has the critical Instagram permissions
-# ✅ Instagram Business Account found!
-# ✅ Matches secrets.js configuration
+# Token has the critical Instagram permissions
+# Instagram Business Account found!
+# Matches secrets.js configuration
 ```
 
 ---
@@ -53,10 +53,10 @@ See **CREATE_NEW_INSTAGRAM_ACCOUNT.md** for full step-by-step instructions.
 
 ## Why This Approach?
 
-✅ **Clean slate** - No legacy issues from @ted_dancin_  
-✅ **Brand consistency** - Username matches your project  
-✅ **Full control** - You own it from day 1  
-✅ **API ready** - Properly configured for posting  
+**Clean slate** - No legacy issues from @ted_dancin_  
+**Brand consistency** - Username matches your project  
+**Full control** - You own it from day 1  
+**API ready** - Properly configured for posting  
 
 ---
 
@@ -65,7 +65,7 @@ See **CREATE_NEW_INSTAGRAM_ACCOUNT.md** for full step-by-step instructions.
 | Item | Current (Not Working) | New (Will Work) |
 |------|----------------------|----------------|
 | Instagram | @ted_dancin_ | @midnightsoldiers |
-| Connection | ❌ Not connected | ✅ Connected |
+| Connection | Not connected | Connected |
 | Account ID | 17841407775331305 | Will get new ID |
 | Status | Permission errors | Ready to post |
 
@@ -73,19 +73,19 @@ See **CREATE_NEW_INSTAGRAM_ACCOUNT.md** for full step-by-step instructions.
 
 ## What You'll Need
 
-- 📱 **Mobile device** (for Instagram Business setup)
-- 🔑 **Facebook Admin access** to your Page (862511466941111)
-- ⏱️ **~15 minutes** of your time
+- **Mobile device** (for Instagram Business setup)
+- **Facebook Admin access** to your Page (862511466941111)
+- **~15 minutes** of your time
 
 ---
 
 ## After Setup
 
 Once connected, you can:
-- ✅ Post reels from your backend
-- ✅ Post videos to Facebook
-- ✅ Access Instagram Insights
-- ✅ Manage content via API
+- Post reels from your backend
+- Post videos to Facebook
+- Access Instagram Insights
+- Manage content via API
 
 ---
 
@@ -128,5 +128,5 @@ If something doesn't work:
 2. Or just follow the "TL;DR" section above for quick setup
 3. Run `node updateInstagramConfig.js` when ready to update config
 
-Let's get your Instagram posting working! 🎉
+Let's get your Instagram posting working!
 

@@ -2,7 +2,7 @@
 
 Backend API for posting content to Facebook and Instagram.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### First Time Setup
 
@@ -39,7 +39,7 @@ node app.js
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 | File | Description |
 |------|-------------|
@@ -50,7 +50,7 @@ node app.js
 
 ---
 
-## 🛠️ Utility Scripts
+## Utility Scripts
 
 ### `generateLongLivedToken.js`
 Generate a 60-day access token from a short-lived token.
@@ -79,14 +79,14 @@ node checkTokenPermissions.js
 
 **Expected output when working:**
 ```
-✅ Token has the critical Instagram permissions
-✅ Instagram Business Account found!
-✅ Matches secrets.js configuration
+Token has the critical Instagram permissions
+Instagram Business Account found!
+Matches secrets.js configuration
 ```
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 midnightsoldiers-be/
@@ -108,7 +108,7 @@ midnightsoldiers-be/
 
 ---
 
-## 🔑 Configuration
+## Configuration
 
 ### Required Environment
 
@@ -129,11 +129,11 @@ const INSTAGRAM_ACCESS_TOKEN = "your-instagram-token";
 - `pages_read_engagement`
 - `pages_manage_posts`
 - `instagram_manage_insights`
-- `instagram_content_publish` ⭐ (Critical for posting reels)
+- `instagram_content_publish` (Critical for posting reels)
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### "Application does not have permission for this action"
 
@@ -168,14 +168,14 @@ node checkTokenPermissions.js
 ```
 
 This will tell you:
-- ✅ Token is valid
-- ✅ Has correct permissions
-- ✅ Instagram account is connected
-- ✅ Business Account ID matches configuration
+- Token is valid
+- Has correct permissions
+- Instagram account is connected
+- Business Account ID matches configuration
 
 ---
 
-## 📡 API Endpoints
+## API Endpoints
 
 ### POST `/reels/post`
 
@@ -214,7 +214,7 @@ Post a reel to Facebook and/or Instagram.
 
 ---
 
-## 🔄 Token Maintenance
+## Token Maintenance
 
 Access tokens expire every **60 days**. Set a reminder to regenerate:
 
@@ -227,7 +227,7 @@ node generateLongLivedToken.js
 
 ---
 
-## 🎯 Current Configuration
+## Current Configuration
 
 - **Facebook App:** midnightsol (ID: 1453446205748046)
 - **Facebook Page:** midnightsol (ID: 862511466941111)
@@ -236,7 +236,7 @@ node generateLongLivedToken.js
 
 ---
 
-## 📞 Support & Resources
+## Support & Resources
 
 ### Facebook/Instagram API Docs
 - [Instagram Content Publishing](https://developers.facebook.com/docs/instagram-api/guides/content-publishing)
@@ -251,17 +251,17 @@ node generateLongLivedToken.js
 
 ---
 
-## 🔒 Security
+## Security
 
-- ⚠️ **NEVER commit `secrets.js`** to version control
-- ⚠️ Keep access tokens secure
-- ⚠️ Rotate tokens regularly
-- ✅ `secrets.js` is already in `.gitignore`
-- ✅ Use `secrets.template.js` for reference
+- **NEVER commit `secrets.js`** to version control
+- Keep access tokens secure
+- Rotate tokens regularly
+- `secrets.js` is already in `.gitignore`
+- Use `secrets.template.js` for reference
 
 ---
 
-## ✅ Pre-flight Checklist
+## Pre-flight Checklist
 
 Before posting content, verify:
 
@@ -270,13 +270,13 @@ Before posting content, verify:
 - [ ] Instagram connected to Facebook Page
 - [ ] Access token generated with Instagram permissions
 - [ ] `secrets.js` updated with correct values
-- [ ] `node checkTokenPermissions.js` shows all green ✅
+- [ ] `node checkTokenPermissions.js` shows all green
 - [ ] Server restarted after config changes
 - [ ] Video URL is publicly accessible
 
 ---
 
-## 🎉 You're Ready!
+## You're Ready!
 
 Once setup is complete, you can post reels to Facebook and Instagram via your API!
 
