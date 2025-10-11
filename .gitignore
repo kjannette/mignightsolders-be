@@ -34,3 +34,6 @@ tmp/
 # Database files (if applicable, e.g., for local development)
 *.sqlite
 *.db
+
+secrets.js
+secrets*

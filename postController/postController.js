@@ -7,6 +7,9 @@ const {
   getUploadStatus,
   publishReel,
 } = require("../postServices/facebookApiService.js");
+const {
+  postReelToInstagram,
+} = require("../postServices/instagramApiService.js");
 
 class PostController {
   constructor() {
@@ -15,18 +18,45 @@ class PostController {
   }
 
   /**
-   * Main method to handle reel posting with conditional logic
+   * Main method to handle reel posting to both Facebook and Instagram
    * @param {Object} reelData - Reel data from frontend
    */
   async handleReelPost(reelData) {
     try {
-      console.log("PostController: Starting reel post workflow...");
+      console.log("PostController: Starting reel post workflow to Facebook and Instagram...");
 
-      // Option 1: Use the complete workflow (recommended for production)
-      const result = await postReelToFacebook(reelData);
-      console.log("Complete workflow result:", result);
+      // Post to both Facebook and Instagram in parallel
+      const [facebookResult, instagramResult] = await Promise.allSettled([
+        postReelToFacebook(reelData),
+        postReelToInstagram(reelData),
+      ]);
 
-      return result;
+      // Process results
+      const results = {
+        facebook: {
+          success: facebookResult.status === "fulfilled",
+          data: facebookResult.status === "fulfilled" ? facebookResult.value : null,
+          error: facebookResult.status === "rejected" ? facebookResult.reason.message : null,
+        },
+        instagram: {
+          success: instagramResult.status === "fulfilled",
+          data: instagramResult.status === "fulfilled" ? instagramResult.value : null,
+          error: instagramResult.status === "rejected" ? instagramResult.reason.message : null,
+        },
+      };
+
+      console.log("Social media posting results:", results);
+
+      // Return success if at least one platform succeeded
+      const overallSuccess = results.facebook.success || results.instagram.success;
+
+      return {
+        success: overallSuccess,
+        message: overallSuccess
+          ? "Reel posted to social media"
+          : "Failed to post to any platform",
+        results: results,
+      };
     } catch (error) {
       console.error("============================================");
       console.error("PostController: Error in reel post workflow");
@@ -34,8 +64,11 @@ class PostController {
       console.error("Error stack:", error.stack);
       console.error("============================================");
 
-      // Option 2: Manual step-by-step with conditional logic
-      return await this.handleManualWorkflow(reelData);
+      return {
+        success: false,
+        error: error.message,
+        stack: error.stack,
+      };
     }
   }
 

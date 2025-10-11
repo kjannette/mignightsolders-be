@@ -73,6 +73,7 @@ async function createReelsMediaContainer(reelData) {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error("Instagram API error response:", errorText);
       throw new Error(
         `Instagram API error: ${response.status} ${response.statusText} - ${errorText}`
       );
@@ -114,6 +115,7 @@ async function getMediaContainerStatus(creationId) {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error("Instagram status error response:", errorText);
       throw new Error(
         `Instagram status error: ${response.status} ${response.statusText} - ${errorText}`
       );
@@ -217,6 +219,7 @@ async function publishMediaContainer(creationId) {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error("Instagram publish error response:", errorText);
       throw new Error(
         `Instagram publish error: ${response.status} ${response.statusText} - ${errorText}`
       );
@@ -259,6 +262,7 @@ async function getPublishedMediaInfo(mediaId) {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error("Instagram media info error response:", errorText);
       throw new Error(
         `Instagram media info error: ${response.status} ${response.statusText} - ${errorText}`
       );
@@ -387,10 +391,16 @@ async function postReelToInstagram(reel) {
       },
     };
   } catch (error) {
-    console.error("Error in postReelToInstagram:", error);
+    console.error("============================================");
+    console.error("ERROR in postReelToInstagram:");
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+    console.error("Reel data that caused error:", JSON.stringify(reel, null, 2));
+    console.error("============================================");
     return {
       success: false,
       error: error.message,
+      stack: error.stack,
     };
   }
 }
