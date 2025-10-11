@@ -7,6 +7,7 @@ const { postReelToFacebook } = require("./postServices/facebookApiService.js");
 const {
   postReelToInstagram,
 } = require("./postServices/instagramApiService.js");
+const postController = require("./postController/postController.js");
 //const { db } = require("./firebase/firebase.js");
 
 const { collection, query, where, getDocs } = require("firebase/firestore");
@@ -17,20 +18,63 @@ app.use(cors()); // Enable CORS for all origins
 app.use(express.json()); // Parse JSON request bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 /*
- *  POST store new reel data
+ *  POST store new reel data and automatically post to social media
  */
 
-app.post("/v1/accept-reel-data/:reelId", function (req, res) {
-  console.log("accept-reel-data was hit by frontend")
+app.post("/v1/accept-reel-data/:reelId", async function (req, res) {
+  console.log("accept-reel-data was hit by frontend");
   const { reelId } = req.params;
-  const data = req.body;
+  const reelData = req.body;
+  
   try {
-    //storeReelData(docId, data);
-    console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~`data received by backed:  ", data);
+    console.log("Data received by backend:", reelData);
+    console.log("Reel ID:", reelId);
+    
+    // Validate required fields
+    if (!reelData.reelVideoUrl) {
+      return res.status(400).json({
+        success: false,
+        error: "reelVideoUrl is required",
+        reelId
+      });
+    }
+    
+    // Automatically post to social media using PostController
+    console.log("Starting automatic post to social media...");
+    const result = await postController.handleReelPost(reelData);
+    
+    if (result.success) {
+      console.log("Successfully posted to social media:", result);
+      res.json({
+        success: true,
+        message: "Reel received and posted to social media",
+        reelId,
+        result
+      });
+    } else {
+      console.error("Failed to post to social media:", result);
+      res.status(500).json({
+        success: false,
+        message: "Reel received but failed to post to social media",
+        reelId,
+        error: result.error
+      });
+    }
   } catch (err) {
-    console.log("Error at /v1/store-reel-data/:reelId:", err);
+    console.error("============================================");
+    console.error("ERROR at /v1/accept-reel-data/:reelId endpoint");
+    console.error("Reel ID:", reelId);
+    console.error("Error message:", err.message);
+    console.error("Error stack:", err.stack);
+    console.error("Request body:", JSON.stringify(req.body, null, 2));
+    console.error("============================================");
+    res.status(500).json({
+      success: false,
+      error: err.message || "Internal server error",
+      stack: err.stack,
+      reelId
+    });
   }
-  res.end();
 });
 
 /*

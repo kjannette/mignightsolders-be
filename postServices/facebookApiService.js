@@ -25,8 +25,13 @@ async function initializeUploadSession(reelData) {
 
     const url = `${FACEBOOK_GRAPH_API_BASE}/${FACEBOOK_API_VERSION}/${FACEBOOK_PAGE_ID}/video_reels`;
 
+    // Calculate file size in bytes
+    const fileSizeInBytes = Math.round(reelData.reelSize * 1024 * 1024);
+
     const requestBody = {
       upload_phase: "start",
+      file_url: reelData.reelVideoUrl,
+      file_size: fileSizeInBytes,
       access_token: FACEBOOK_PAGE_ACCESS_TOKEN,
     };
 
@@ -42,8 +47,10 @@ async function initializeUploadSession(reelData) {
     });
 
     if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("Facebook API error response:", errorBody);
       throw new Error(
-        `Facebook API error: ${response.status} ${response.statusText}`
+        `Facebook API error: ${response.status} ${response.statusText} - ${errorBody}`
       );
     }
 
@@ -94,8 +101,10 @@ async function uploadVideoFile(videoId, fileUrl, fileSizeInBytes) {
     });
 
     if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("Facebook upload error response:", errorBody);
       throw new Error(
-        `Facebook upload error: ${response.status} ${response.statusText}`
+        `Facebook upload error: ${response.status} ${response.statusText} - ${errorBody}`
       );
     }
 
@@ -148,8 +157,10 @@ async function resumeInterruptedUpload(
     });
 
     if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("Facebook resume upload error response:", errorBody);
       throw new Error(
-        `Facebook resume upload error: ${response.status} ${response.statusText}`
+        `Facebook resume upload error: ${response.status} ${response.statusText} - ${errorBody}`
       );
     }
 
@@ -255,8 +266,10 @@ async function getUploadStatus(videoId) {
     });
 
     if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("Facebook status error response:", errorBody);
       throw new Error(
-        `Facebook status error: ${response.status} ${response.statusText}`
+        `Facebook status error: ${response.status} ${response.statusText} - ${errorBody}`
       );
     }
 
@@ -316,8 +329,10 @@ async function publishReel(videoId, reelData) {
     });
 
     if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("Facebook publish error response:", errorBody);
       throw new Error(
-        `Facebook publish error: ${response.status} ${response.statusText}`
+        `Facebook publish error: ${response.status} ${response.statusText} - ${errorBody}`
       );
     }
 
@@ -339,7 +354,7 @@ async function publishReel(videoId, reelData) {
  * @param {Object} reel - Reel data from frontend
  */
 async function postReelToFacebook(reel) {
-  console.log("postReelToFacebook was called");
+  console.log("~~~~~~~~~~~~~~~~postReelToFacebook was called");
   console.log("Received reel data:", reel);
 
   try {
@@ -393,10 +408,16 @@ async function postReelToFacebook(reel) {
       },
     };
   } catch (error) {
-    console.error("Error in postReelToFacebook:", error);
+    console.error("============================================");
+    console.error("ERROR in postReelToFacebook:");
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+    console.error("Reel data that caused error:", JSON.stringify(reel, null, 2));
+    console.error("============================================");
     return {
       success: false,
       error: error.message,
+      stack: error.stack,
     };
   }
 }

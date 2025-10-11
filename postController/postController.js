@@ -28,7 +28,11 @@ class PostController {
 
       return result;
     } catch (error) {
-      console.error("PostController: Error in reel post workflow:", error);
+      console.error("============================================");
+      console.error("PostController: Error in reel post workflow");
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+      console.error("============================================");
 
       // Option 2: Manual step-by-step with conditional logic
       return await this.handleManualWorkflow(reelData);
@@ -126,11 +130,16 @@ class PostController {
         },
       };
     } catch (error) {
-      console.error("PostController: Manual workflow failed:", error);
+      console.error("============================================");
+      console.error("PostController: Manual workflow failed");
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+      console.error("============================================");
       return {
         success: false,
         workflow: "manual",
         error: error.message,
+        stack: error.stack,
       };
     }
   }
@@ -161,11 +170,16 @@ class PostController {
         });
       }
     } catch (error) {
-      console.error("PostController: Error handling reel post request:", error);
+      console.error("============================================");
+      console.error("PostController: Error handling reel post request");
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+      console.error("============================================");
       res.status(500).json({
         success: false,
         message: "Internal server error",
         error: error.message,
+        stack: error.stack,
       });
     }
   }
