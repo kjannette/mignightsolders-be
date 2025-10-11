@@ -10,6 +10,9 @@ const {
 const {
   postReelToInstagram,
 } = require("../postServices/instagramApiService.js");
+const {
+  postVideoToTikTok,
+} = require("../postServices/tikTokApiService.js");
 
 class PostController {
   constructor() {
@@ -18,17 +21,18 @@ class PostController {
   }
 
   /**
-   * Main method to handle reel posting to both Facebook and Instagram
+   * Main method to handle reel posting to Facebook, Instagram, and TikTok
    * @param {Object} reelData - Reel data from frontend
    */
   async handleReelPost(reelData) {
     try {
-      console.log("PostController: Starting reel post workflow to Facebook and Instagram...");
+      console.log("PostController: Starting reel post workflow to Facebook, Instagram, and TikTok...");
 
-      // Post to both Facebook and Instagram in parallel
-      const [facebookResult, instagramResult] = await Promise.allSettled([
+      // Post to all platforms in parallel
+      const [facebookResult, instagramResult, tiktokResult] = await Promise.allSettled([
         postReelToFacebook(reelData),
         postReelToInstagram(reelData),
+        postVideoToTikTok(reelData),
       ]);
 
       // Process results
@@ -43,12 +47,17 @@ class PostController {
           data: instagramResult.status === "fulfilled" ? instagramResult.value : null,
           error: instagramResult.status === "rejected" ? instagramResult.reason.message : null,
         },
+        tiktok: {
+          success: tiktokResult.status === "fulfilled",
+          data: tiktokResult.status === "fulfilled" ? tiktokResult.value : null,
+          error: tiktokResult.status === "rejected" ? tiktokResult.reason.message : null,
+        },
       };
 
       console.log("Social media posting results:", results);
 
       // Return success if at least one platform succeeded
-      const overallSuccess = results.facebook.success || results.instagram.success;
+      const overallSuccess = results.facebook.success || results.instagram.success || results.tiktok.success;
 
       return {
         success: overallSuccess,

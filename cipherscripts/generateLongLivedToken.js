@@ -116,7 +116,12 @@ async function main() {
     console.log("5. Get SHORT_LIVED_TOKEN from https://developers.facebook.com/tools/explorer/");
     console.log("   - Select your app");
     console.log("   - Click 'Generate Access Token'");
-    console.log("   - Grant permissions: pages_show_list, pages_read_engagement, pages_manage_posts");
+    console.log("   - Grant permissions:");
+    console.log("     * pages_show_list");
+    console.log("     * pages_read_engagement");
+    console.log("     * pages_manage_posts");
+    console.log("     * instagram_basic (or instagram_manage_insights for newer API)");
+    console.log("     * instagram_content_publish ← CRITICAL for posting reels!");
     console.log();
     return;
   }
