@@ -334,6 +334,15 @@ async function postReelToInstagram(reel) {
   console.log("postReelToInstagram was called");
   console.log("Received reel data:", reel);
 
+  // Check if Instagram is properly configured
+  if (!INSTAGRAM_BUSINESS_ACCOUNT_ID || !INSTAGRAM_ACCESS_TOKEN) {
+    console.warn("⚠️  Instagram not configured - skipping Instagram post");
+    return {
+      success: false,
+      error: "Instagram credentials not configured. Please connect Instagram to Facebook Page and update secrets.js",
+    };
+  }
+
   try {
     // Validate reel requirements
     const validation = validateReelRequirements(reel);
