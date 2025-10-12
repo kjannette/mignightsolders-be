@@ -18,7 +18,7 @@ const FACEBOOK_API_VERSION = "v23.0";
 // ============================================
 const APP_ID = "1453446205748046";
 const APP_SECRET = "b04fed741855317aee871475cb138383";
-const SHORT_LIVED_TOKEN = "EAAUp5tDLM04BPruqdUsPy6ZB4ifqPGO6U0u0Kzrfu48ROajy1CwSweGdyPh7vgzfGktZA5WhXmoHZCkHXEaLJSAZAieVwdJR0VOqPGXSecZBPdZA4KXnOwiCfd449mOYQKPRZB0qgjUZBr4KPFlmXuCxL3duTB4iI5pep4kwbnhUPA36YDm1LCNLh9wQ63ZB5JcO46BbxMZBZB0hEejGM5L9T6lrBFrOLksZCTa9DYnPMuXbvwZDZD";
+const SHORT_LIVED_TOKEN = "EAAUp5tDLM04BPuwZBwfmkHZCOqvZBg4VnY8UA45tSIcvgN0lzCaZBxzPviRQZBZBQnr2p0QT4xbwxB0ueaGyERAKcnOZCjpuXdVC0prGi74vGVaYW1rQvy1LEZCGnWAYfqO7mfO6ZCrzSekbAWQkZCBFiayCaTiZAW3rivLC5JOfbhsWsh8s14yZBg8Uju0DW779ZCGriXxjiTL4bvrwNcmJVRWD7QiY6Xn4pugWmA6VdDxaLkQZDZD";
 // ============================================
 
 async function generateLongLivedUserToken() {
