@@ -2,12 +2,15 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const fs = require("fs");
+const axios = require("axios");
 // Import API services
 const { postReelToFacebook } = require("./postServices/facebookApiService.js");
 const {
   postReelToInstagram,
 } = require("./postServices/instagramApiService.js");
 const postController = require("./postController/postController.js");
+// Import TikTok credentials
+const { TIKTOK_CLIENT_KEY, TIKTOK_CLIENT_SECRET } = require("./secrets.js");
 //const { db } = require("./firebase/firebase.js");
 
 const { collection, query, where, getDocs } = require("firebase/firestore");
@@ -17,6 +20,98 @@ const port = 3200
 app.use(cors()); // Enable CORS for all origins
 app.use(express.json()); // Parse JSON request bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+
+/*
+ *  GET TikTok OAuth callback - handles authorization code exchange
+ */
+app.get('/auth/tiktok/callback', async (req, res) => {
+  const { code, state, error, error_description } = req.query;
+
+  console.log('TikTok OAuth callback received:', { code: !!code, state, error, error_description });
+
+  try {
+    // Handle OAuth errors
+    if (error) {
+      console.error('TikTok OAuth error:', error, error_description);
+      return res.redirect(`https://www.midnightsoldiers.com/reellogin?error=${encodeURIComponent(error_description || error)}`);
+    }
+
+    // Validate required parameters
+    if (!code) {
+      console.error('No authorization code received from TikTok');
+      return res.redirect('https://www.midnightsoldiers.com/reellogin?error=No authorization code received');
+    }
+
+    // Exchange authorization code for access token
+    const tokenResponse = await exchangeTikTokCodeForToken(code);
+
+    if (tokenResponse.success) {
+      console.log('TikTok OAuth successful, redirecting to dashboard');
+      // Store token in session or database as needed
+      // For now, just redirect to success page with token info
+      const successUrl = `https://www.midnightsoldiers.com/reellogin?success=true&tiktok_connected=true`;
+      res.redirect(successUrl);
+    } else {
+      console.error('Token exchange failed:', tokenResponse.error);
+      res.redirect(`https://www.midnightsoldiers.com/reellogin?error=${encodeURIComponent(tokenResponse.error)}`);
+    }
+
+  } catch (err) {
+    console.error('Error in TikTok OAuth callback:', err);
+    res.redirect(`https://www.midnightsoldiers.com/reellogin?error=${encodeURIComponent('Authentication failed')}`);
+  }
+});
+
+/*
+ *  TikTok OAuth helper function - exchanges code for access token
+ */
+async function exchangeTikTokCodeForToken(authorizationCode) {
+  try {
+    // TikTok token exchange endpoint
+    const tokenUrl = 'https://open.tiktokapis.com/oauth/access_token/';
+
+    // Get TikTok app credentials from secrets file
+    const clientKey = TIKTOK_CLIENT_KEY;
+    const clientSecret = TIKTOK_CLIENT_SECRET;
+    const redirectUri = 'https://www.midnightsoldiers.com/auth/tiktok/callback';
+
+    const response = await axios.post(tokenUrl, {
+      client_key: clientKey,
+      client_secret: clientSecret,
+      code: authorizationCode,
+      grant_type: 'authorization_code',
+      redirect_uri: redirectUri
+    }, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+
+    if (response.data && response.data.access_token) {
+      console.log('TikTok token exchange successful');
+      return {
+        success: true,
+        access_token: response.data.access_token,
+        refresh_token: response.data.refresh_token,
+        expires_in: response.data.expires_in,
+        token_type: response.data.token_type
+      };
+    } else {
+      return {
+        success: false,
+        error: 'Invalid response from TikTok token endpoint'
+      };
+    }
+
+  } catch (error) {
+    console.error('TikTok token exchange error:', error.response?.data || error.message);
+    return {
+      success: false,
+      error: error.response?.data?.error_description || error.message || 'Token exchange failed'
+    };
+  }
+}
+
 /*
  *  POST store new reel data and automatically post to social media
  */
