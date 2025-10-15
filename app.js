@@ -3,12 +3,23 @@ const cors = require("cors");
 const app = express();
 const fs = require("fs");
 const axios = require("axios");
+const multer = require("multer");
+const path = require("path");
+const { v4: uuidv4 } = require("uuid");
+
 // Import API services
 const { postReelToFacebook } = require("./postServices/facebookApiService.js");
 const {
   postReelToInstagram,
 } = require("./postServices/instagramApiService.js");
 const postController = require("./postController/postController.js");
+
+// Import queue services
+const videoQueueManager = require("./queueServices/videoQueueManager.js");
+const automatedPoster = require("./queueServices/automatedPoster.js");
+const scheduler = require("./queueServices/scheduler.js");
+const config = require("./config/schedulerConfig.js");
+
 // Import TikTok credentials
 const { TIKTOK_CLIENT_KEY, TIKTOK_CLIENT_SECRET } = require("./secrets.js");
 //const { db } = require("./firebase/firebase.js");
@@ -20,6 +31,46 @@ const port = 3200
 app.use(cors()); // Enable CORS for all origins
 app.use(express.json()); // Parse JSON request bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+
+// Serve static files from video_queue directory
+app.use('/video_queue', express.static(path.join(__dirname, 'video_queue')));
+
+// Configure multer for video file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = './video_queue/pending/';
+    // Ensure directory exists
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const videoId = uuidv4();
+    const ext = path.extname(file.originalname);
+    const filename = `${videoId}${ext}`;
+    // Store videoId in request for later use
+    req.generatedVideoId = videoId;
+    req.generatedFilename = filename;
+    cb(null, filename);
+  }
+});
+
+const upload = multer({ 
+  storage,
+  limits: { 
+    fileSize: 1024 * 1024 * 1024 // 1GB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept only video files
+    const allowedMimeTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'];
+    if (allowedMimeTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only video files are allowed (mp4, mov, avi, webm)'));
+    }
+  }
+});
 
 /*
  *  GET TikTok OAuth callback - handles authorization code exchange
@@ -386,6 +437,330 @@ app.put("/api/post-to-social/:reelId", async function (req, res) {
   }
 });
 
+// ============================================
+// VIDEO QUEUE MANAGEMENT ENDPOINTS
+// ============================================
+
+/*
+ * POST /api/queue/upload - Upload video file and add to queue
+ */
+app.post("/api/queue/upload", upload.single('videoFile'), async function (req, res) {
+  console.log("[API] Upload video to queue endpoint called");
+  
+  try {
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: "No video file provided"
+      });
+    }
+
+    const { videoName, videoDescription, scheduledTime } = req.body;
+    const videoId = req.generatedVideoId;
+    const filename = req.generatedFilename;
+    
+    // Get file size in MB
+    const fileSizeInMB = req.file.size / (1024 * 1024);
+    
+    // Construct video URL
+    const baseUrl = config.storage.baseUrl;
+    const port = config.storage.port;
+    const videoUrl = `${baseUrl}:${port}/video_queue/pending/${filename}`;
+    
+    // Add to queue
+    const queueItem = await videoQueueManager.addToQueue({
+      videoId,
+      videoFileName: filename,
+      videoName: videoName || "Untitled Video",
+      videoDescription: videoDescription || "",
+      videoUrl,
+      videoSize: fileSizeInMB,
+      scheduledTime: scheduledTime || new Date().toISOString()
+    });
+    
+    console.log(`[API] Video added to queue: ${videoId} - ${videoName}`);
+    
+    res.json({
+      success: true,
+      message: "Video uploaded and added to queue",
+      video: queueItem
+    });
+    
+  } catch (error) {
+    console.error("[API] Error uploading video:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/*
+ * POST /api/queue/add - Add video to queue (manual metadata entry)
+ */
+app.post("/api/queue/add", async function (req, res) {
+  console.log("[API] Add video to queue endpoint called");
+  
+  try {
+    const { videoFileName, videoName, videoDescription, videoUrl, videoSize, scheduledTime } = req.body;
+    
+    if (!videoFileName || !videoUrl) {
+      return res.status(400).json({
+        success: false,
+        error: "videoFileName and videoUrl are required"
+      });
+    }
+    
+    const queueItem = await videoQueueManager.addToQueue({
+      videoFileName,
+      videoName: videoName || "Untitled Video",
+      videoDescription: videoDescription || "",
+      videoUrl,
+      videoSize: videoSize || 0,
+      scheduledTime: scheduledTime || new Date().toISOString()
+    });
+    
+    res.json({
+      success: true,
+      message: "Video added to queue",
+      video: queueItem
+    });
+    
+  } catch (error) {
+    console.error("[API] Error adding video to queue:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/*
+ * GET /api/queue/status - Get queue statistics
+ */
+app.get("/api/queue/status", async function (req, res) {
+  try {
+    const stats = await videoQueueManager.getQueueStats();
+    
+    res.json({
+      success: true,
+      stats
+    });
+  } catch (error) {
+    console.error("[API] Error getting queue status:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/*
+ * GET /api/queue/list - Get all videos in queue
+ */
+app.get("/api/queue/list", async function (req, res) {
+  try {
+    const { status } = req.query; // Optional filter by status
+    
+    const videos = await videoQueueManager.getAllVideos(status || null);
+    
+    res.json({
+      success: true,
+      count: videos.length,
+      videos
+    });
+  } catch (error) {
+    console.error("[API] Error listing queue:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/*
+ * GET /api/queue/:videoId - Get specific video from queue
+ */
+app.get("/api/queue/:videoId", async function (req, res) {
+  try {
+    const { videoId } = req.params;
+    
+    const video = await videoQueueManager.getVideoById(videoId);
+    
+    if (!video) {
+      return res.status(404).json({
+        success: false,
+        error: "Video not found in queue"
+      });
+    }
+    
+    res.json({
+      success: true,
+      video
+    });
+  } catch (error) {
+    console.error("[API] Error getting video:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/*
+ * DELETE /api/queue/:videoId - Remove video from queue
+ */
+app.delete("/api/queue/:videoId", async function (req, res) {
+  try {
+    const { videoId } = req.params;
+    
+    await videoQueueManager.removeFromQueue(videoId);
+    
+    res.json({
+      success: true,
+      message: "Video removed from queue"
+    });
+  } catch (error) {
+    console.error("[API] Error removing video:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/*
+ * POST /api/queue/post-next - Manually trigger posting of next video
+ */
+app.post("/api/queue/post-next", async function (req, res) {
+  console.log("[API] Manual post-next triggered");
+  
+  try {
+    const result = await automatedPoster.postNext();
+    
+    res.json({
+      success: result.success,
+      message: result.message || "Post operation completed",
+      result
+    });
+  } catch (error) {
+    console.error("[API] Error in post-next:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// ============================================
+// SCHEDULER CONTROL ENDPOINTS
+// ============================================
+
+/*
+ * POST /api/scheduler/start - Start the scheduler
+ */
+app.post("/api/scheduler/start", function (req, res) {
+  console.log("[API] Start scheduler endpoint called");
+  
+  try {
+    const result = scheduler.start();
+    res.json(result);
+  } catch (error) {
+    console.error("[API] Error starting scheduler:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/*
+ * POST /api/scheduler/stop - Stop the scheduler
+ */
+app.post("/api/scheduler/stop", function (req, res) {
+  console.log("[API] Stop scheduler endpoint called");
+  
+  try {
+    const result = scheduler.stop();
+    res.json(result);
+  } catch (error) {
+    console.error("[API] Error stopping scheduler:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/*
+ * POST /api/scheduler/restart - Restart the scheduler
+ */
+app.post("/api/scheduler/restart", function (req, res) {
+  console.log("[API] Restart scheduler endpoint called");
+  
+  try {
+    const { cronSchedule } = req.body;
+    const result = scheduler.restart(cronSchedule);
+    res.json(result);
+  } catch (error) {
+    console.error("[API] Error restarting scheduler:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/*
+ * GET /api/scheduler/status - Get scheduler status
+ */
+app.get("/api/scheduler/status", async function (req, res) {
+  try {
+    const status = await scheduler.getStatus();
+    res.json({
+      success: true,
+      status
+    });
+  } catch (error) {
+    console.error("[API] Error getting scheduler status:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/*
+ * PUT /api/scheduler/config - Update scheduler configuration
+ */
+app.put("/api/scheduler/config", function (req, res) {
+  console.log("[API] Update scheduler config endpoint called");
+  
+  try {
+    const { cronSchedule } = req.body;
+    
+    if (!cronSchedule) {
+      return res.status(400).json({
+        success: false,
+        error: "cronSchedule is required"
+      });
+    }
+    
+    const result = scheduler.updateSchedule(cronSchedule);
+    res.json(result);
+  } catch (error) {
+    console.error("[API] Error updating scheduler config:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 console.log("app running on port", port);
+console.log("Automated video posting system initialized");
+console.log(`- Queue management: /api/queue/*`);
+console.log(`- Scheduler control: /api/scheduler/*`);
 
 app.listen(port);

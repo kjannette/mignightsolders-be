@@ -36,4 +36,9 @@ tmp/
 *.db
 
 secrets.js
-secrets*
+secrets*# Video Queue (don't commit video files)
+video_queue/pending/*.mp4
+video_queue/pending/*.mov
+video_queue/pending/*.avi
+video_queue/pending/*.webm
+video_queue/posted/*
